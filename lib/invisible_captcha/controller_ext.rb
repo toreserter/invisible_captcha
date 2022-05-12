@@ -29,7 +29,11 @@ module InvisibleCaptcha
         if respond_to?(:redirect_back)
           redirect_back(fallback_location: root_path, flash: { error: InvisibleCaptcha.timestamp_error_message })
         else
-          redirect_to :back, flash: { error: InvisibleCaptcha.timestamp_error_message }
+          if request.env["HTTP_REFERER"]
+            redirect_to :back, flash: { error: InvisibleCaptcha.timestamp_error_message }
+          else
+            redirect_to root_path
+          end
         end
       end
     end
@@ -71,7 +75,7 @@ module InvisibleCaptcha
 
     def invisible_captcha?(options = {})
       honeypot = options[:honeypot]
-      scope    = options[:scope] || controller_name.singularize
+      scope = options[:scope] || controller_name.singularize
 
       if honeypot
         # If honeypot is presented, search for:
